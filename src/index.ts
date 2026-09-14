@@ -1,4 +1,26 @@
+import "dotenv/config";
+import { Pool } from "pg";
 import express, { Request, Response } from "express";
+
+export const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: Number(process.env.DB_PORT) || 5432,
+});
+
+const testConnection = async () => {
+  try {
+    const res = await pool.query("SELECT NOW()");
+    console.log("✅ Connection successful!");
+    console.log("PostgreSQL Server Time:", res.rows[0].now);
+  } catch (error) {
+    console.error("❌ Database connection failed:", error);
+  }
+};
+
+testConnection();
 
 interface Product {
   id: number;
@@ -14,8 +36,14 @@ const products: Product[] = [
 const app = express();
 const PORT = 3000;
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World test");
+app.get("/", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM tasks");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error fetching tasks:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 app.get("/about", (req: Request, res: Response) => {
