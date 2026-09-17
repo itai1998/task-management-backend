@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Pool } from "pg";
 import express, { Request, Response } from "express";
+import taskRoutes from "./routes/task.routes";
 
 export const pool = new Pool({
   user: process.env.DB_USER,
@@ -35,6 +36,9 @@ const products: Product[] = [
 
 const app = express();
 const PORT = 3000;
+
+app.use(express.json());
+app.use(taskRoutes);
 
 app.get("/", async (req: Request, res: Response) => {
   try {
